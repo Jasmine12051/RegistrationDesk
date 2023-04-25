@@ -38,6 +38,10 @@
     }
     
     else if($server_args['REQUEST_METHOD'] == 'POST'){
+        
+        $json = array();
+        
+        $json["input"] = file_get_contents("php://input");
             
         if (isset($post_args['attendeeid']) && isset(($post_args['sessionid']))) {
 
@@ -48,7 +52,6 @@
             $stmt->bind_param("ii", $attendeeid, $sessionid);
             $stmt->execute();
             
-            $json = array();
             $json["success"] = ($stmt->affected_rows == 1);
             
         }
@@ -73,17 +76,23 @@
     }
     
     else if($server_args['REQUEST_METHOD'] == 'DELETE'){
+        
         parse_str(file_get_contents("php://input"), $delete_args);
         
-        if (isset($delete_args['attendeeid']) && isset(($delete_args['sessionid']))) {
+        if (isset($delete_args['attendeeid'])) {
             
             $attendeeid = intval($delete_args['attendeeid']);
-            $sessionid = intval($delete_args['sessionid']);
             
-            $stmt = $mysqli->prepare("DELETE FROM registration WHERE attendeeid=? AND sessionid=?");
-            $stmt->bind_param("ii", $attendeeid, $sessionid);
-            $stmt->execute();            
+            $stmt = $mysqli->prepare("DELETE FROM registration WHERE attendeeid=?");
+            $stmt->bind_param("i", $attendeeid);
+            $stmt->execute();
+            
+            $json = array();
+            $json["success"] = ($stmt->affected_rows == 1);
+            
         }
+        
+        echo json_encode($json);
         
     }    
     

@@ -47,6 +47,7 @@
                 $entry["description"] = $record["description"];
                 array_push($json, $entry);
             }
+            
         }
     echo json_encode($json);
     

@@ -39,23 +39,52 @@
     }
     
     
-    else if($server_args['REQUEST_METHOD'] == 'POST') {
+    else if($server_args['REQUEST_METHOD'] == 'POST'){
+            
+        if (isset($post_args['firstname'], $post_args['lastname'], $post_args['displayname'])) {
 
-        $firstname = $post_args['firstname'];
-        $lastname = $post_args['lastname'];
-        $displayname = $post_args['displayname']; 
-
-        $stmt = $mysqli->prepare("INSERT INTO attendee (firstname, lastname, displayname) VALUES (?, ?, ?)");
-        
-        $stmt->bind_param("sss", $firstname, $lastname, $displayname);
-        $stmt->execute();
-        $rows = $stmt->affected_rows;
-        
-        $json = array();
-        $json["success"] = ($rows == 1);
+            $firstname = $post_args['firstname'];
+            $lastname = $post_args['lastname'];
+            $displayname = $post_args['displayname']; 
+            
+            $stmt = $mysqli->prepare("INSERT INTO attendee (firstname, lastname, displayname) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss",$firstname, $lastname, $displayname);
+            $stmt->execute();
+            $json = array();
+            $json["success"] = ($stmt->affected_rows == 1);
+            
+            if ($stmt->affected_rows == 1) {
+                
+                $json["id"] = ($stmt->insert_id);
+                
+            }
+            
+        }
         
         echo json_encode($json);
         
+    }
+    
+    else if($server_args['REQUEST_METHOD'] == 'PUT'){
+        parse_str(file_get_contents("php://input"), $put_args);
+        
+        if (isset($put_args['id'], $put_args['firstname'], $put_args['lastname'], $put_args['displayname'])) {
+            
+            $id = intval($put_args['id']);
+            $firstname = $put_args['firstname'];
+            $lastname = $put_args['lastname'];
+            $displayname = $put_args['displayname'];
+            
+            $stmt = $mysqli->prepare("UPDATE attendee SET firstname=?, lastname=?, displayname=? WHERE id=?");
+            $stmt->bind_param("sssi", $firstname, $lastname, $displayname, $id);
+            $stmt->execute();
+            $json = array();
+            $json["success"] = ($stmt->affected_rows == 1);            
+        }
+        
+        echo json_encode($json);        
+        
     }    
+    
     
 ?>

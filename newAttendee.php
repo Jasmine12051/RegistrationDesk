@@ -24,16 +24,43 @@
                 <p>
                     <label for="displayname">Display Name:</label>
                     <input type="text" name="displayname" id="displayname">
-                </p> 
+                </p>
+                
+                <p>
+                    <label for="sessionid">Session:</label>                   
+                    <?php
+                    
+                
+                    
+                    $mysqli = new mysqli("127.0.0.1", "cs325_p3_user", "P3!user", "cs325_p3_sp23");
+                    $result = $mysqli->query("SELECT * FROM session");
+                    
+
+                    echo "<select id=\"sessionid\">";
+                    echo "<option value=\"0\" selected>Choose Session:</option>";
+                    
+                    foreach ($result as $record) {
+                        $id = $record["id"];
+                        $description = $record["description"];
+                        echo "<option value=\"{$id}\">{$description}</option>";
+                    }
+
+                    echo "</select>";
+                    
+                    ?>                    
+                    
+                </p>
 
                 <p>
                     <input type="submit" value="Register" onclick="return register();">
                 </p>
-
             </fieldset>
         </form>
+        
+        <p>Click <a href="Index.html">here</a> to return to main menu</p>        
+        
         <div id="output">
-            
+           
         </div>
         
         <script type="text/javascript">
@@ -52,25 +79,41 @@
                 $("#displayname").val(dname);
             }
             
-            function register() {
-                
-                $.ajax({
+            
+        function register() {
+
+            $.ajax({
+
+                url: "attendee.php",
+                method: "POST",
+                data: $("#registrationform").serialize(),
+                dataType: "json",
+
+                success: function (json) {
                     
-                    url: "attendee.php",
-                    method: "POST",
-                    data: $("#registrationform").serialize(),
-                    dataType: "json",
+                    var registration = {};
+                    registration["attendeeid"] = json["id"];
+                    registration["sessionid"] = Number($("#sessionid").val());
                     
-                    success: function (json) {
-                        var success = json['success'];
-                        $("#output").html("New attendee added!" + success);
-                    }
+                    $.ajax({
+                        url: "registration.php",
+                        method: "POST",
+                        data: $.param(registration),
+                        dataType: "json",
 
-                });
+                        success: function (json) {
+                            $("#output").html("Registration Completed!");
+                        }
 
-                return false;
+                    });
+                }
 
-            }
+            });
+            return false;
+        }             
+            
+         
+            
         </script>
     
     </body>
